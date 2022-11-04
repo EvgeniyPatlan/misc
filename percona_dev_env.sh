@@ -11,6 +11,7 @@ if whiptail --yesno "Do you have Docker installed on your system" 0 0 ;then
     "ps-5.7" "Percona Server for MySQL 5.7" OFF \
     "pxc-8.0" "Percona XtraDB Cluster 8.0" OFF \
     "pxc-5.7" "Percona XtraDB Cluster 5.7" OFF \
+    "pxb-8.0" "Percona XtraBackup 8.0" OFF \
     "psmdb-6.0" "Percona Server for MongoDB 6.0" OFF \
     "psmdb-5.0" "Percona Server for MongoDB 5.0" OFF \
     "psmdb-4.4" "Percona Server for MongoDB 4.4" OFF \
@@ -25,6 +26,9 @@ if whiptail --yesno "Do you have Docker installed on your system" 0 0 ;then
     elif [ $product = "pxc" ]; then
         product="percona-xtradb-cluster"
         path="https://raw.githubusercontent.com/percona/$product/$version/build-ps/pxc_builder.sh"
+    elif [ $product = "pxb" ]; then
+        product="percona-xtrabackup"
+        path="https://raw.githubusercontent.com/percona/$product/$version/storage/innobase/xtrabackup/utils/percona-xtrabackup-8.0_builder.sh"
     elif [ $product = "psmdb" ]; then
         path="https://raw.githubusercontent.com/percona/percona-server-mongodb/v$version/percona-packaging/scripts/psmdb_builder.sh"
         product="percona-server-mongodb"

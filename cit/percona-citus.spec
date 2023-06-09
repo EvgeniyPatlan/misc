@@ -15,7 +15,7 @@
 %endif
 
 Name:           percona-%{sname}_%{pgmajorversion}
-Version:        11.2.1
+Version:        11.3.0
 Release:        1%{dist}
 License:        AGPLv3
 URL:            https://github.com/citusdata/%{sname}

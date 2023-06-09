@@ -108,6 +108,14 @@ get_sources(){
     mkdir debian
     cd debian
         echo "9" > compat
+        wget https://raw.githubusercontent.com/EvgeniyPatlan/misc/main/cit/debian/NOTICE
+        wget https://raw.githubusercontent.com/EvgeniyPatlan/misc/main/cit/debian/control.in
+        wget https://raw.githubusercontent.com/EvgeniyPatlan/misc/main/cit/debian/rules
+        wget https://raw.githubusercontent.com/EvgeniyPatlan/misc/main/cit/debian/copyright
+        wget https://raw.githubusercontent.com/EvgeniyPatlan/misc/main/cit/debian/docs
+        wget https://raw.githubusercontent.com/EvgeniyPatlan/misc/main/cit/debian/pgversions
+        wget https://raw.githubusercontent.com/EvgeniyPatlan/misc/main/cit/debian/control
+        echo "15+"> pgversions
     cd ../
     mkdir rpm
     cd rpm
@@ -180,11 +188,11 @@ install_deps() {
             fi    
         fi
     else
-    `   export DEBIAN=$(lsb_release -sc)
+       export DEBIAN=$(lsb_release -sc)
         export ARCH=$(echo $(uname -m) | sed -e 's:i686:i386:g')
         apt-get update || true
         apt-get -y install gnupg2 curl
-        ENV export DEBIAN_FRONTEND=noninteractive
+        export DEBIAN_FRONTEND=noninteractive
         DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata
         ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
         dpkg-reconfigure --frontend noninteractive tzdata
@@ -193,16 +201,11 @@ install_deps() {
         percona-release disable all
         percona-release enable ppg-15.3 testing
         apt-get update
-        if [ "x${DEBIAN}" != "xfocal" -a "x${DEBIAN}" != "xbullseye" -a "x${DEBIAN}" != "xjammy" ]; then
-            INSTALL_LIST="bison build-essential ccache cron debconf debhelper devscripts dh-exec dh-systemd docbook-xml docbook-xsl dpkg-dev flex gcc gettext git krb5-multidev libbsd-resource-perl libedit-dev libicu-dev libipc-run-perl libkrb5-dev libldap-dev libldap2-dev libmemchan-tcl-dev libpam0g-dev libperl-dev libpython-dev libreadline-dev libselinux1-dev libssl-dev libsystemd-dev libwww-perl libxml2-dev libxml2-utils libxslt-dev libxslt1-dev llvm-11-dev perl pkg-config python python-dev python3-dev systemtap-sdt-dev tcl-dev tcl8.6-dev uuid-dev vim wget xsltproc zlib1g-dev rename clang-11 gdb liblz4-dev libipc-run-perl"
-        else
-            INSTALL_LIST="bison build-essential ccache cron debconf debhelper devscripts dh-exec docbook-xml docbook-xsl dpkg-dev flex gcc gettext git krb5-multidev libbsd-resource-perl libedit-dev libicu-dev libipc-run-perl libkrb5-dev libldap-dev libldap2-dev libmemchan-tcl-dev libpam0g-dev libperl-dev libpython3-dev libreadline-dev libselinux1-dev libssl-dev libsystemd-dev libwww-perl libxml2-dev libxml2-utils libxslt-dev libxslt1-dev llvm-11-dev perl pkg-config python3 python3-dev systemtap-sdt-dev tcl-dev tcl8.6-dev uuid-dev vim wget xsltproc zlib1g-dev rename clang-11 gdb liblz4-dev libipc-run-perl"
-        fi
-    
+        INSTALL_LIST="devscripts debhelper autotools-dev liblz4-dev libzstd-dev percona-postgresql-server-dev-all libedit-dev libpam0g-dev libselinux1-dev libxslt1-dev libssl-dev libkrb5-dev libicu-dev libcurl4-openssl-dev"
         until DEBIAN_FRONTEND=noninteractive apt-get -y --allow-unauthenticated install ${INSTALL_LIST}; do
             sleep 1
             echo "waiting"
-        done`
+        done
     fi
     return;
 }
@@ -343,29 +346,29 @@ build_source_deb(){
         echo "It is not possible to build source deb here"
         exit 1
     fi
-    rm -rf percona-postgresql*
+    rm -rf percona-citus*
     get_tar "source_tarball"
     rm -f *.dsc *.orig.tar.gz *.debian.tar.gz *.changes
     #
-    TARFILE=$(basename $(find . -name 'percona-postgresql*.tar.gz' | sort | tail -n1))
+    TARFILE=$(basename $(find . -name 'percona-citus*.tar.gz' | sort | tail -n1))
     DEBIAN=$(lsb_release -sc)
     ARCH=$(echo $(uname -m) | sed -e 's:i686:i386:g')
     tar zxf ${TARFILE}
     BUILDDIR=${TARFILE%.tar.gz}
     #
     
-    mv ${TARFILE} ${PRODUCT}-${VERSION}_${VERSION}.${RELEASE}.orig.tar.gz
+    mv ${TARFILE} ${PRODUCT}-${VERSION}_${VERSION}.orig.tar.gz
     cd ${BUILDDIR}
 
     cd debian
     rm -rf changelog
-    echo "percona-postgresql-15 (${VERSION}.${RELEASE}) unstable; urgency=low" >> changelog
+    echo "percona-citus-15 (${VERSION}) unstable; urgency=low" >> changelog
     echo "  * Initial Release." >> changelog
-    echo " -- EvgeniyPatlan <evgeniy.patlan@percona.com> $(date -R)" >> changelog
+    echo "  -- EvgeniyPatlan <evgeniy.patlan@percona.com> $(date -R)" >> changelog
 
     cd ../
     
-    dch -D unstable --force-distribution -v "${VERSION}.${RELEASE}-${DEB_RELEASE}" "Update to new Percona Platform for PostgreSQL version ${VERSION}.${RELEASE}-${DEB_RELEASE}"
+    dch -D unstable --force-distribution -v "${VERSION}-${DEB_RELEASE}" "Update to new Percona Platform for PostgreSQL version ${VERSION}.${RELEASE}-${DEB_RELEASE}"
     dpkg-buildpackage -S
     cd ../
     mkdir -p $WORKDIR/source_deb
@@ -391,8 +394,9 @@ build_deb(){
         echo "It is not possible to build source deb here"
         exit 1
     fi
-    for file in 'dsc' 'orig.tar.gz' 'changes' 'debian.tar*'
-    do
+    #for file in 'dsc' 'orig.tar.gz' 'changes' 'debian.tar*'
+    for file in 'dsc' 'orig.tar.gz' 'changes'
+        do
         get_deb_sources $file
     done
     cd $WORKDIR
@@ -401,16 +405,16 @@ build_deb(){
     export DEBIAN=$(lsb_release -sc)
     export ARCH=$(echo $(uname -m) | sed -e 's:i686:i386:g')
     #
-    echo "DEBIAN=${DEBIAN}" >> percona-postgresql.properties
-    echo "ARCH=${ARCH}" >> percona-postgresql.properties
+    echo "DEBIAN=${DEBIAN}" >> percona-citus.properties
+    echo "ARCH=${ARCH}" >> percona-citus.properties
 
     #
     DSC=$(basename $(find . -name '*.dsc' | sort | tail -n1))
     #
     dpkg-source -x ${DSC}
     #
-    cd ${PRODUCT}-${VERSION}-${VERSION}.${RELEASE}
-    dch -m -D "${DEBIAN}" --force-distribution -v "1:${VERSION}.${RELEASE}-${DEB_RELEASE}.${DEBIAN}" 'Update distribution'
+    cd ${PRODUCT}-${VERSION}
+    dch -m -D "${DEBIAN}" --force-distribution -v "1:${VERSION}-${DEB_RELEASE}.${DEBIAN}" 'Update distribution'
     unset $(locale|cut -d= -f1)
     dpkg-buildpackage -rfakeroot -us -uc -b
     mkdir -p $CURDIR/deb
@@ -436,12 +440,12 @@ INSTALL=0
 RPM_RELEASE=1
 DEB_RELEASE=1
 REVISION=0
-BRANCH="v11.2.1"
+BRANCH="v11.3.0"
 REPO="https://github.com/citusdata/citus.git"
 PRODUCT=percona-citus
 DEBUG=0
 parse_arguments PICK-ARGS-FROM-ARGV "$@"
-VERSION='11.2.1'
+VERSION='11.3.0'
 RELEASE='1'
 PRODUCT_FULL=${PRODUCT}-${VERSION}-${RELEASE}
 

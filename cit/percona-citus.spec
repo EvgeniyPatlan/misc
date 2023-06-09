@@ -28,6 +28,7 @@ Summary:        PostgreSQL extension that transforms Postgres into a distributed
 
 Provides:       %{sname} = %{version}-%{release}
 Obsoletes:      %{sname} <= %{version}-%{release}
+Epoch:          1
 
 %if 0%{?suse_version} >= 1315
 Requires:       libzstd1

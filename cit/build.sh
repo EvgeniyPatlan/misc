@@ -94,8 +94,8 @@ get_sources(){
         echo "There were some issues during repo cloning from github. Please retry one more time"
         exit 1
     fi
-    mv citus ${PRODUCT_FULL}
-    cd ${PRODUCT_FULL}
+    mv citus ${PRODUCT}-${VERSION}
+    cd ${PRODUCT}-${VERSION}
     if [ ! -z "$BRANCH" ]
     then
         git reset --hard
@@ -105,42 +105,25 @@ get_sources(){
     REVISION=$(git rev-parse --short HEAD)
     echo "REVISION=${REVISION}" >> ${WORKDIR}/percona-citus.properties
     rm -fr debian rpm
-
-    git clone https://salsa.debian.org/postgresql/postgresql.git deb_packaging
-    cd deb_packaging
-        git checkout -b 15 remotes/origin/15
-    cd ../
-    mv deb_packaging/debian ./
-    rm -rf deb_packaging
+    mkdir debian
     cd debian
-        for file in $(ls | grep postgresql); do
-            mv $file "percona-$file"
-        done
-	rm -f rules control
-        wget https://raw.githubusercontent.com/percona/postgres-packaging/15.2/postgres/rules
-        wget https://raw.githubusercontent.com/percona/postgres-packaging/15.2/postgres/control
-        sed -i 's/postgresql-15/percona-postgresql-15/' percona-postgresql-15.templates
-	echo "9" > compat
+        echo "9" > compat
     cd ../
-    git clone https://git.postgresql.org/git/pgrpms.git
     mkdir rpm
-    mv pgrpms/rpm/redhat/main/non-common/postgresql-15/main/*   rpm/
-    rm -rf pgrpms
     cd rpm
-        rm postgresql-15.spec
-        wget  https://raw.githubusercontent.com/percona/postgres-packaging/15.2/postgres/percona-postgresql-15.spec
+        wget https://raw.githubusercontent.com/EvgeniyPatlan/misc/main/cit/percona-citus.spec
     cd ../
     cd ${WORKDIR}
     #
     source percona-postgresql.properties
     #
 
-    tar --owner=0 --group=0 --exclude=.* -czf ${PRODUCT_FULL}.tar.gz ${PRODUCT_FULL}
+    tar --owner=0 --group=0 --exclude=.* -czf ${PRODUCT}-${VERSION}.tar.gz ${PRODUCT}-${VERSION}
     echo "UPLOAD=UPLOAD/experimental/BUILDS/${PRODUCT}-15/${PRODUCT_FULL}/${PSM_BRANCH}/${REVISION}/${BUILD_ID}" >> percona-postgresql.properties
     mkdir $WORKDIR/source_tarball
     mkdir $CURDIR/source_tarball
-    cp ${PRODUCT_FULL}.tar.gz $WORKDIR/source_tarball
-    cp ${PRODUCT_FULL}.tar.gz $CURDIR/source_tarball
+    cp ${PRODUCT}-${VERSION}.tar.gz $WORKDIR/source_tarball
+    cp ${PRODUCT}-${VERSION}.tar.gz $CURDIR/source_tarball
     cd $CURDIR
     rm -rf percona-postgresql*
     return
@@ -177,20 +160,21 @@ install_deps() {
         yum -y install wget git rpmdevtools
         yum -y install https://repo.percona.com/yum/percona-release-latest.noarch.rpm
         percona-release disable all
-        percona-relase enable ppg-15.3 testing
+        percona-release enable ppg-15.3 testing
         yum -y install epel-release
         RHEL=$(rpm --eval %rhel)
         if [ x"$RHEL" = x7 ]; then
-            INSTALL_LIST=""
+            yum -y install centos-release-scl
+            INSTALL_LIST="devtoolset-8-gcc devtoolset-8-libstdc++-devel gcc percona-postgresql15-devel libxml2-devel libxslt-devel openssl-devel pam-devel readline-devel libcurl-devel libzstd-devel llvm5.0-devel llvm-toolset-7-clang lz4-devel"
             yum -y install ${INSTALL_LIST}
         else
             dnf module -y disable postgresql
             if [ x"$RHEL" = x8 ]; then
                 dnf config-manager --set-enabled ol8_codeready_builder
-                INSTALL_LIST="clang-devel libcurl-devel libxml2-devel libxslt-devel libzstd-devel llvm-devel openssl-devel pam-devel percona-postgresql15-devel readline-devel lz4-devel"
+                INSTALL_LIST="gcc clang-devel libcurl-devel libxml2-devel libxslt-devel libzstd-devel llvm-devel openssl-devel pam-devel percona-postgresql15-devel readline-devel lz4-devel"
                 yum -y install ${INSTALL_LIST}
             else
-                INSTALL_LIST=""
+                INSTALL_LIST="krb5-devel gcc clang-devel libcurl-devel libxml2-devel libxslt-devel libzstd-devel llvm-devel openssl-devel pam-devel percona-postgresql15-devel readline-devel lz4-devel"
                 dnf config-manager --set-enabled ol9_codeready_builder
                 yum -y install ${INSTALL_LIST}
             fi    
@@ -225,10 +209,10 @@ install_deps() {
 
 get_tar(){
     TARBALL=$1
-    TARFILE=$(basename $(find $WORKDIR/$TARBALL -name 'percona-postgresql*.tar.gz' | sort | tail -n1))
+    TARFILE=$(basename $(find $WORKDIR/$TARBALL -name 'percona-citus*.tar.gz' | sort | tail -n1))
     if [ -z $TARFILE ]
     then
-        TARFILE=$(basename $(find $CURDIR/$TARBALL -name 'percona-postgresql*.tar.gz' | sort | tail -n1))
+        TARFILE=$(basename $(find $CURDIR/$TARBALL -name 'percona-citus*.tar.gz' | sort | tail -n1))
         if [ -z $TARFILE ]
         then
             echo "There is no $TARBALL for build"
@@ -245,10 +229,10 @@ get_tar(){
 get_deb_sources(){
     param=$1
     echo $param
-    FILE=$(basename $(find $WORKDIR/source_deb -name "percona-postgresql*.$param" | sort | tail -n1))
+    FILE=$(basename $(find $WORKDIR/source_deb -name "percona-citus*.$param" | sort | tail -n1))
     if [ -z $FILE ]
     then
-        FILE=$(basename $(find $CURDIR/source_deb -name "percona-postgresql*.$param" | sort | tail -n1))
+        FILE=$(basename $(find $CURDIR/source_deb -name "percona-citus*.$param" | sort | tail -n1))
         if [ -z $FILE ]
         then
             echo "There is no sources for build"
@@ -284,12 +268,12 @@ build_srpm(){
     tar vxzf ${WORKDIR}/${TARFILE} --wildcards '*/rpm' --strip=1
     #
     cp -av rpm/* rpmbuild/SOURCES
-    cp -av rpmbuild/SOURCES/percona-citus-15.spec rpmbuild/SPECS
+    cp -av rpmbuild/SOURCES/percona-citus.spec rpmbuild/SPECS
     #
     mv -fv ${TARFILE} ${WORKDIR}/rpmbuild/SOURCES
     rpmbuild -bs --define "_topdir ${WORKDIR}/rpmbuild" --define "dist .generic" \
         --define "pgmajorversion 15" --define "pginstdir /usr/pgsql-15"  --define "pgpackageversion 15" \
-        rpmbuild/SPECS/percona-citus-15.spec
+        rpmbuild/SPECS/percona-citus.spec
     mkdir -p ${WORKDIR}/srpm
     mkdir -p ${CURDIR}/srpm
     cp rpmbuild/SRPMS/*.src.rpm ${CURDIR}/srpm
@@ -333,6 +317,9 @@ build_rpm(){
     cd $WORKDIR
     RHEL=$(rpm --eval %rhel)
     ARCH=$(echo $(uname -m) | sed -e 's:i686:i386:g')
+    if [ x"$RHEL" = x7 ]; then
+        source /opt/rh/devtoolset-8/enable
+    fi
     rpmbuild --define "_topdir ${WORKDIR}/rpmbuild" --define "dist .$OS_NAME" --define "pgmajorversion 15" --define "pginstdir /usr/pgsql-15" --define "pgpackageversion 15" --rebuild rpmbuild/SRPMS/$SRC_RPM
 
     return_code=$?
@@ -423,7 +410,7 @@ build_deb(){
     dpkg-source -x ${DSC}
     #
     cd ${PRODUCT}-${VERSION}-${VERSION}.${RELEASE}
-    dch -m -D "${DEBIAN}" --force-distribution -v "2:${VERSION}.${RELEASE}-${DEB_RELEASE}.${DEBIAN}" 'Update distribution'
+    dch -m -D "${DEBIAN}" --force-distribution -v "1:${VERSION}.${RELEASE}-${DEB_RELEASE}.${DEBIAN}" 'Update distribution'
     unset $(locale|cut -d= -f1)
     dpkg-buildpackage -rfakeroot -us -uc -b
     mkdir -p $CURDIR/deb

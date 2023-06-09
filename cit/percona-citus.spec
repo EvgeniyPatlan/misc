@@ -1,4 +1,6 @@
 %undefine _debugsource_packages
+%define debug_package %{nil}
+
 %global sname citus
 %global pgmajorversion 15
 
@@ -86,7 +88,7 @@ This packages provides JIT support for Citus
 %endif
 
 %prep
-%setup -q -n %{sname}-%{version}
+%setup -q -n percona-%{sname}-%{version}
 
 %build
 %configure PG_CONFIG=%{pginstdir}/bin/pg_config

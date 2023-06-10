@@ -123,17 +123,17 @@ get_sources(){
     cd ../
     cd ${WORKDIR}
     #
-    source percona-postgresql.properties
+    source percona-citus.properties
     #
 
     tar --owner=0 --group=0 --exclude=.* -czf ${PRODUCT}-${VERSION}.tar.gz ${PRODUCT}-${VERSION}
-    echo "UPLOAD=UPLOAD/experimental/BUILDS/${PRODUCT}-15/${PRODUCT_FULL}/${PSM_BRANCH}/${REVISION}/${BUILD_ID}" >> percona-postgresql.properties
+    echo "UPLOAD=UPLOAD/experimental/BUILDS/${PRODUCT}-15/${PRODUCT_FULL}/${PSM_BRANCH}/${REVISION}/${BUILD_ID}" >> percona-citus.properties
     mkdir $WORKDIR/source_tarball
     mkdir $CURDIR/source_tarball
     cp ${PRODUCT}-${VERSION}.tar.gz $WORKDIR/source_tarball
     cp ${PRODUCT}-${VERSION}.tar.gz $CURDIR/source_tarball
     cd $CURDIR
-    rm -rf percona-postgresql*
+    rm -rf percona-citus*
     return
 }
 

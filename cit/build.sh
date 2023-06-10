@@ -127,7 +127,7 @@ get_sources(){
     #
 
     tar --owner=0 --group=0 --exclude=.* -czf ${PRODUCT}-${VERSION}.tar.gz ${PRODUCT}-${VERSION}
-    echo "UPLOAD=UPLOAD/experimental/BUILDS/${PRODUCT}-15/${PRODUCT_FULL}/${BRANCH}/${REVISION}/${BUILD_ID}" >> percona-citus.properties
+    echo "UPLOAD=UPLOAD/experimental/BUILDS/${PRODUCT}-${PGRELEASE}/${PRODUCT_FULL}/${BRANCH}/${REVISION}/${BUILD_ID}" >> percona-citus.properties
     mkdir $WORKDIR/source_tarball
     mkdir $CURDIR/source_tarball
     cp ${PRODUCT}-${VERSION}.tar.gz $WORKDIR/source_tarball
@@ -173,7 +173,7 @@ install_deps() {
         RHEL=$(rpm --eval %rhel)
         if [ x"$RHEL" = x7 ]; then
             yum -y install centos-release-scl
-            INSTALL_LIST="devtoolset-8-gcc devtoolset-8-libstdc++-devel gcc percona-postgresql15-devel libxml2-devel libxslt-devel openssl-devel pam-devel readline-devel libcurl-devel libzstd-devel llvm5.0-devel llvm-toolset-7-clang lz4-devel"
+            INSTALL_LIST="make devtoolset-8-gcc devtoolset-8-libstdc++-devel gcc percona-postgresql15-devel libxml2-devel libxslt-devel openssl-devel pam-devel readline-devel libcurl-devel libzstd-devel llvm5.0-devel llvm-toolset-7-clang lz4-devel"
             yum -y install ${INSTALL_LIST}
         else
             dnf module -y disable postgresql
@@ -357,7 +357,8 @@ build_source_deb(){
     BUILDDIR=${TARFILE%.tar.gz}
     #
     
-    mv ${TARFILE} ${PRODUCT}-${VERSION}_${VERSION}.orig.tar.gz
+    mv ${TARFILE} ${PRODUCT}-${PGRELEASE}_${VERSION}-${DEB_RELEASE}.orig.tar.gz
+    mv ${TARFILE} ${PRODUCT}-${PGRELEASE}_${VERSION}-${DEB_RELEASE}.tar.gz
     cd ${BUILDDIR}
 
     cd debian
@@ -368,7 +369,7 @@ build_source_deb(){
 
     cd ../
     
-    dch -D unstable --force-distribution -v "${VERSION}-${DEB_RELEASE}" "Update to new Percona Platform for PostgreSQL version ${VERSION}.${RELEASE}-${DEB_RELEASE}"
+    dch -D unstable --force-distribution -v "${VERSION}-${DEB_RELEASE}" "Update to new Percona Platform for PostgreSQL version ${VERSION}-${DEB_RELEASE}"
     dpkg-buildpackage -S
     cd ../
     mkdir -p $WORKDIR/source_deb
@@ -376,11 +377,11 @@ build_source_deb(){
     cp *.debian.tar.* $WORKDIR/source_deb
     cp *_source.changes $WORKDIR/source_deb
     cp *.dsc $WORKDIR/source_deb
-    cp *.orig.tar.gz $WORKDIR/source_deb
+    cp *.tar.gz $WORKDIR/source_deb
     cp *.debian.tar.* $CURDIR/source_deb
     cp *_source.changes $CURDIR/source_deb
     cp *.dsc $CURDIR/source_deb
-    cp *.orig.tar.gz $CURDIR/source_deb
+    cp *.tar.gz $CURDIR/source_deb
 }
 
 build_deb(){
@@ -395,7 +396,7 @@ build_deb(){
         exit 1
     fi
     #for file in 'dsc' 'orig.tar.gz' 'changes' 'debian.tar*'
-    for file in 'dsc' 'orig.tar.gz' 'changes'
+    for file in 'dsc' '*.tar.gz' 'changes'
         do
         get_deb_sources $file
     done
@@ -413,7 +414,7 @@ build_deb(){
     #
     dpkg-source -x ${DSC}
     #
-    cd ${PRODUCT}-${VERSION}
+    cd ${PRODUCT}-${PGRELEASE}-${VERSION}
     dch -m -D "${DEBIAN}" --force-distribution -v "1:${VERSION}-${DEB_RELEASE}.${DEBIAN}" 'Update distribution'
     unset $(locale|cut -d= -f1)
     dpkg-buildpackage -rfakeroot -us -uc -b
@@ -446,7 +447,7 @@ PRODUCT=percona-citus
 DEBUG=0
 parse_arguments PICK-ARGS-FROM-ARGV "$@"
 VERSION='11.3.0'
-RELEASE='1'
+PGRELEASE='15'
 PRODUCT_FULL=${PRODUCT}-${VERSION}
 
 check_workdir

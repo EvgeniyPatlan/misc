@@ -121,6 +121,11 @@ make %{?_smp_mflags}
 %{pginstdir}/share/extension/%{sname}_columnar-*.sql
 %{pginstdir}/share/extension/columnar-*.sql
 %{pginstdir}/share/extension/%{sname}_columnar.control
+%{pginstdir}/lib/bitcode/citus_columnar/*.bc
+%{pginstdir}/lib/bitcode/columnar/*.bc
+%{pginstdir}/lib/bitcode/citus_columnar/safeclib/*.bc
+%{pginstdir}/lib/bitcode/citus_pgoutput/*.bc
+%{pginstdir}/lib/bitcode/citus_wal2json/*.bc
 
 %files devel
 %defattr(-,root,root,-)

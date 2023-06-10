@@ -191,7 +191,7 @@ install_deps() {
        export DEBIAN=$(lsb_release -sc)
         export ARCH=$(echo $(uname -m) | sed -e 's:i686:i386:g')
         apt-get update || true
-        apt-get -y install gnupg2 curl
+        apt-get -y install gnupg2 curl wget
         export DEBIAN_FRONTEND=noninteractive
         DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata
         ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime

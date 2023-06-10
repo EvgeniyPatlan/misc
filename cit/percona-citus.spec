@@ -92,7 +92,7 @@ This packages provides JIT support for Citus
 %setup -q -n percona-%{sname}-%{version}
 
 %build
-%configure PG_CONFIG=%{pginstdir}/bin/pg_config
+%configure PG_CONFIG=%{pginstdir}/bin/pg_config --with-security-flags
 make %{?_smp_mflags}
 
 %install

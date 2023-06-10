@@ -115,6 +115,8 @@ make %{?_smp_mflags}
 %doc %{pginstdir}/doc/extension/README-%{sname}.md
 %{pginstdir}/lib/%{sname}.so
 %{pginstdir}/lib/%{sname}_columnar.so
+%{pginstdir}/lib/citus_decoders/*.so
+%{pginstdir}/lib/citus_*.so
 %{pginstdir}/bin/pg_send_cancellation
 %{pginstdir}/share/extension/%{sname}-*.sql
 %{pginstdir}/share/extension/%{sname}.control

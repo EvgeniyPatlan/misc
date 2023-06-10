@@ -82,9 +82,9 @@ get_sources(){
     PRODUCT=percona-citus
     echo "PRODUCT=${PRODUCT}" > percona-citus.properties
 
-    PRODUCT_FULL=${PRODUCT}-${VERSION}.${RELEASE}
+    PRODUCT_FULL=${PRODUCT}-${VERSION}
     echo "PRODUCT_FULL=${PRODUCT_FULL}" >> percona-citus.properties
-    echo "VERSION=${PSM_VER}" >> percona-citus.properties
+    echo "VERSION=${VERSION}" >> percona-citus.properties
     echo "BUILD_NUMBER=${BUILD_NUMBER}" >> percona-citus.properties
     echo "BUILD_ID=${BUILD_ID}" >> percona-citus.properties
     git clone "$REPO"
@@ -127,7 +127,7 @@ get_sources(){
     #
 
     tar --owner=0 --group=0 --exclude=.* -czf ${PRODUCT}-${VERSION}.tar.gz ${PRODUCT}-${VERSION}
-    echo "UPLOAD=UPLOAD/experimental/BUILDS/${PRODUCT}-15/${PRODUCT_FULL}/${PSM_BRANCH}/${REVISION}/${BUILD_ID}" >> percona-citus.properties
+    echo "UPLOAD=UPLOAD/experimental/BUILDS/${PRODUCT}-15/${PRODUCT_FULL}/${BRANCH}/${REVISION}/${BUILD_ID}" >> percona-citus.properties
     mkdir $WORKDIR/source_tarball
     mkdir $CURDIR/source_tarball
     cp ${PRODUCT}-${VERSION}.tar.gz $WORKDIR/source_tarball
@@ -447,7 +447,7 @@ DEBUG=0
 parse_arguments PICK-ARGS-FROM-ARGV "$@"
 VERSION='11.3.0'
 RELEASE='1'
-PRODUCT_FULL=${PRODUCT}-${VERSION}-${RELEASE}
+PRODUCT_FULL=${PRODUCT}-${VERSION}
 
 check_workdir
 get_system

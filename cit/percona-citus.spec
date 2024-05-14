@@ -2,7 +2,7 @@
 %define debug_package %{nil}
 
 %global sname citus
-%global pgmajorversion 15
+%global pgmajorversion 16
 
 %ifarch ppc64 ppc64le s390 s390x armv7hl
  %if 0%{?rhel} && 0%{?rhel} == 7
@@ -15,7 +15,7 @@
 %endif
 
 Name:           percona-%{sname}_%{pgmajorversion}
-Version:        11.3.0
+Version:        12.1.3
 Release:        1%{dist}
 License:        AGPLv3
 URL:            https://github.com/citusdata/%{sname}
@@ -142,5 +142,8 @@ make %{?_smp_mflags}
 %endif
 
 %changelog
+* Tue May 14 2024 Evgeniy Patlan <evgeniy.patlan@percona.com> 12.1.3-1
+- Update version
+
 * Fri Jun  9 2023 Evgeniy Patlan <evgeniy.patlan@percona.com> 11.2.1-1
 - Initial build

@@ -115,7 +115,7 @@ get_sources(){
         wget https://raw.githubusercontent.com/EvgeniyPatlan/misc/main/cit/debian/docs
         wget https://raw.githubusercontent.com/EvgeniyPatlan/misc/main/cit/debian/pgversions
         wget https://raw.githubusercontent.com/EvgeniyPatlan/misc/main/cit/debian/control
-        echo "15+"> pgversions
+        echo "16+"> pgversions
     cd ../
     mkdir rpm
     cd rpm
@@ -168,21 +168,21 @@ install_deps() {
         yum -y install wget git rpmdevtools
         yum -y install https://repo.percona.com/yum/percona-release-latest.noarch.rpm
         percona-release disable all
-        percona-release enable ppg-15.3 testing
+        percona-release enable ppg-16.3 testing
         yum -y install epel-release
         RHEL=$(rpm --eval %rhel)
         if [ x"$RHEL" = x7 ]; then
             yum -y install centos-release-scl
-            INSTALL_LIST="make devtoolset-8-gcc devtoolset-8-libstdc++-devel gcc percona-postgresql15-devel libxml2-devel libxslt-devel openssl-devel pam-devel readline-devel libcurl-devel libzstd-devel llvm5.0-devel llvm-toolset-7-clang lz4-devel"
+            INSTALL_LIST="make devtoolset-8-gcc devtoolset-8-libstdc++-devel gcc percona-postgresql16-devel libxml2-devel libxslt-devel openssl-devel pam-devel readline-devel libcurl-devel libzstd-devel llvm5.0-devel llvm-toolset-7-clang lz4-devel"
             yum -y install ${INSTALL_LIST}
         else
             dnf module -y disable postgresql
             if [ x"$RHEL" = x8 ]; then
                 dnf config-manager --set-enabled ol8_codeready_builder
-                INSTALL_LIST="gcc clang-devel libcurl-devel libxml2-devel libxslt-devel libzstd-devel llvm-devel openssl-devel pam-devel percona-postgresql15-devel readline-devel lz4-devel"
+                INSTALL_LIST="gcc clang-devel libcurl-devel libxml2-devel libxslt-devel libzstd-devel llvm-devel openssl-devel pam-devel percona-postgresql6-devel readline-devel lz4-devel"
                 yum -y install ${INSTALL_LIST}
             else
-                INSTALL_LIST="krb5-devel gcc clang-devel libcurl-devel libxml2-devel libxslt-devel libzstd-devel llvm-devel openssl-devel pam-devel percona-postgresql15-devel readline-devel lz4-devel"
+                INSTALL_LIST="krb5-devel gcc clang-devel libcurl-devel libxml2-devel libxslt-devel libzstd-devel llvm-devel openssl-devel pam-devel percona-postgresql16-devel readline-devel lz4-devel"
                 dnf config-manager --set-enabled ol9_codeready_builder
                 yum -y install ${INSTALL_LIST}
             fi    
@@ -199,7 +199,7 @@ install_deps() {
         wget https://repo.percona.com/apt/percona-release_1.0-27.generic_all.deb
         dpkg -i percona-release_1.0-27.generic_all.deb
         percona-release disable all
-        percona-release enable ppg-15.3 testing
+        percona-release enable ppg-16.3 testing
         apt-get update
         INSTALL_LIST="devscripts debhelper autotools-dev liblz4-dev libzstd-dev percona-postgresql-server-dev-all libedit-dev libpam0g-dev libselinux1-dev libxslt1-dev libssl-dev libkrb5-dev libicu-dev libcurl4-openssl-dev"
         until DEBIAN_FRONTEND=noninteractive apt-get -y --allow-unauthenticated install ${INSTALL_LIST}; do
@@ -275,7 +275,7 @@ build_srpm(){
     #
     mv -fv ${TARFILE} ${WORKDIR}/rpmbuild/SOURCES
     rpmbuild -bs --define "_topdir ${WORKDIR}/rpmbuild" --define "dist .generic" \
-        --define "pgmajorversion 15" --define "pginstdir /usr/pgsql-15"  --define "pgpackageversion 15" \
+        --define "pgmajorversion 16" --define "pginstdir /usr/pgsql-16"  --define "pgpackageversion 16" \
         rpmbuild/SPECS/percona-citus.spec
     mkdir -p ${WORKDIR}/srpm
     mkdir -p ${CURDIR}/srpm
@@ -323,7 +323,7 @@ build_rpm(){
     if [ x"$RHEL" = x7 ]; then
         source /opt/rh/devtoolset-8/enable
     fi
-    rpmbuild --define "_topdir ${WORKDIR}/rpmbuild" --define "dist .$OS_NAME" --define "pgmajorversion 15" --define "pginstdir /usr/pgsql-15" --define "pgpackageversion 15" --rebuild rpmbuild/SRPMS/$SRC_RPM
+    rpmbuild --define "_topdir ${WORKDIR}/rpmbuild" --define "dist .$OS_NAME" --define "pgmajorversion 16" --define "pginstdir /usr/pgsql-16" --define "pgpackageversion 16" --rebuild rpmbuild/SRPMS/$SRC_RPM
 
     return_code=$?
     if [ $return_code != 0 ]; then
@@ -363,7 +363,7 @@ build_source_deb(){
 
     cd debian
     rm -rf changelog
-    echo "percona-citus-15 (${VERSION}) unstable; urgency=low" >> changelog
+    echo "percona-citus-16 (${VERSION}) unstable; urgency=low" >> changelog
     echo "  * Initial Release." >> changelog
     echo "  -- EvgeniyPatlan <evgeniy.patlan@percona.com> $(date -R)" >> changelog
 
@@ -441,13 +441,13 @@ INSTALL=0
 RPM_RELEASE=1
 DEB_RELEASE=1
 REVISION=0
-BRANCH="v11.3.0"
+BRANCH="v12.1.3"
 REPO="https://github.com/citusdata/citus.git"
 PRODUCT=percona-citus
 DEBUG=0
 parse_arguments PICK-ARGS-FROM-ARGV "$@"
-VERSION='11.3.0'
-PGRELEASE='15'
+VERSION='12.1.3'
+PGRELEASE='16'
 PRODUCT_FULL=${PRODUCT}-${VERSION}
 
 check_workdir

@@ -1,4 +1,4 @@
-Source: percona-citus-15
+Source: percona-citus-16
 Section: database
 Priority: optional
 Maintainer: Percona Development Team <info@percona.com>
